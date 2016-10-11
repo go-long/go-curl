@@ -2,11 +2,27 @@
 package curl
 
 /*
-#cgo linux pkg-config: libcurl
+//#cgo linux pkg-config: libcurl
+#cgo linux LDFLAGS: -lcurl  -Wl,--wrap=memcpy -static-libstdc++
 #cgo darwin LDFLAGS: -lcurl
 #cgo windows LDFLAGS: -lcurl
 #include <stdlib.h>
 #include <curl/curl.h>
+
+#if defined(linux) || defined(__linux) || defined(__linux__) || defined(__GNU__) || defined(__GLIBC__)
+
+#pragma message("__memcpy_glibc_225")
+
+ void* __memcpy_glibc_225(void* dst, const void* src, size_t size);
+__asm__(".symver __memcpy_glibc_225,memcpy@GLIBC_2.2.5");
+
+ void* __wrap_memcpy(void* dst, const void* src, size_t size)
+{
+    return __memcpy_glibc_225(dst, src, size);
+}
+
+#endif
+
 
 static char *string_array_index(char **p, int i) {
   return p[i];
